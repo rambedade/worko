@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { addCandidate } from '../api';
 import { Button, TextField, Container, Typography, Input, Snackbar, Alert } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
@@ -34,9 +35,9 @@ const ReferCandidate = () => {
     };
 
     // Handle form submission
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (!formData.name || !formData.email || !formData.phone || !formData.jobTitle) {
             setSnackbarMessage("All fields except resume are required.");
             setSnackbarSeverity("error");
@@ -44,27 +45,20 @@ const ReferCandidate = () => {
             return;
         }
 
-        // Get stored candidates from local storage
-        const storedCandidates = JSON.parse(localStorage.getItem('candidates')) || [];
+        try {
+            await addCandidate(formData);
+            setSnackbarMessage("Candidate Referred Successfully!");
+            setSnackbarSeverity("success");
+            setOpenSnackbar(true);
 
-        // Add new candidate
-        const newCandidate = { _id: Date.now().toString(), ...formData, status: 'Pending' };
-        storedCandidates.push(newCandidate);
-
-        // Save updated list
-        localStorage.setItem('candidates', JSON.stringify(storedCandidates));
-
-        setSnackbarMessage("Candidate Referred Successfully!");
-        setSnackbarSeverity("success");
-        setOpenSnackbar(true);
-
-        // Clear form after successful submission
-        setFormData({ name: '', email: '', phone: '', jobTitle: '', resume: null });
-
-        // Redirect to Dashboard
-        setTimeout(() => {
-            navigate('/');
-        }, 1000);
+            setTimeout(() => {
+                navigate('/');
+            }, 1000);
+        } catch (error) {
+            setSnackbarMessage("Error submitting candidate. Please try again.");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
+        }
     };
 
     return (
@@ -73,10 +67,10 @@ const ReferCandidate = () => {
                 Refer a Candidate
             </Typography>
             <form onSubmit={handleSubmit}>
-                <TextField name="name" label="Name" fullWidth required value={formData.name} onChange={handleChange} margin="normal" />
-                <TextField name="email" label="Email" fullWidth required value={formData.email} onChange={handleChange} margin="normal" type="email" />
-                <TextField name="phone" label="Phone" fullWidth required value={formData.phone} onChange={handleChange} margin="normal" />
-                <TextField name="jobTitle" label="Job Title" fullWidth required value={formData.jobTitle} onChange={handleChange} margin="normal" />
+                <TextField name="name" label="Name" fullWidth required onChange={handleChange} margin="normal" />
+                <TextField name="email" label="Email" fullWidth required onChange={handleChange} margin="normal" type="email" />
+                <TextField name="phone" label="Phone" fullWidth required onChange={handleChange} margin="normal" />
+                <TextField name="jobTitle" label="Job Title" fullWidth required onChange={handleChange} margin="normal" />
                 
                 <Input type="file" onChange={handleFileChange} accept=".pdf" style={{ marginTop: '10px' }} />
                 
