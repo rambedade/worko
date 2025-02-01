@@ -4,6 +4,7 @@ import { Button, TextField, Container, Typography, Input, Snackbar, Alert } from
 import { useNavigate } from 'react-router-dom';
 
 const ReferCandidate = () => {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -15,7 +16,6 @@ const ReferCandidate = () => {
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-    const navigate = useNavigate();
 
     // Handle input change
     const handleChange = (e) => {
@@ -46,7 +46,17 @@ const ReferCandidate = () => {
         }
 
         try {
-            await addCandidate(formData);
+            const newCandidate = {
+                name: formData.name,
+                email: formData.email,
+                phone: formData.phone,
+                jobTitle: formData.jobTitle,
+                status: "Pending",
+                resumeUrl: formData.resume ? URL.createObjectURL(formData.resume) : ""
+            };
+
+            await addCandidate(newCandidate);
+
             setSnackbarMessage("Candidate Referred Successfully!");
             setSnackbarSeverity("success");
             setOpenSnackbar(true);
@@ -55,6 +65,7 @@ const ReferCandidate = () => {
                 navigate('/');
             }, 1000);
         } catch (error) {
+            console.error("Error adding candidate:", error);
             setSnackbarMessage("Error submitting candidate. Please try again.");
             setSnackbarSeverity("error");
             setOpenSnackbar(true);
